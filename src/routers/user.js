@@ -2,16 +2,16 @@ const express               = require('express'),
       router                = express.Router(),
       user                  = require('../controllers/user'),
       auth                  = require('../middlewares/auth'),
-      multer              = require('multer'),
-      storage             = multer.diskStorage({
-        destination       : function (req, file, cb) {
+      multer                = require('multer'),
+      storage               = multer.diskStorage({
+        destination         : function (req, file, cb) {
             cb(null, 'public/uploads/')
         },
-        filename          : function (req, file, cb) {
+        filename            : function (req, file, cb) {
             cb(null, Date.now() + '-' + file.originalname)
         }
       }),
-      upload              = multer({
+      upload                = multer({
         fileFilter(req,file,cb){
             if(!file.originalname.match(/\.(jpg|jpeg|png|jfif)$/)){
                 return cb(new Error('Please upload a valid image'),null)
@@ -30,5 +30,9 @@ const express               = require('express'),
 /////////////////////////////////////////////// add photo
      router.patch('/addPic',auth,upload.single('image'),user.uploadPic)
 ////////////////////////////////////////////// update profile
-     router.patch('/updateProfile',auth,upload.single('image'),user.update)
+     router.put('/updateProfile',auth,upload.single('image'),user.update)
+////////////////////////////////////////////// follow 
+     router.patch('/follow/:id',auth,user.follow)
+////////////////////////////////////////////// Un follow 
+     router.patch('/unFollow/:id',auth,user.unFollow)
 module.exports = router;

@@ -15,3 +15,5 @@ require('./config/mongoose')
 app.use(express.json(),cors(),userRouter,postRouter,commentRouter,express.static(publicDirectory))
 
 app.listen(port,()=>console.log('Server is running'))
+
+///test branch

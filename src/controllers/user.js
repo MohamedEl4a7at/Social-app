@@ -2,8 +2,7 @@ const User                = require('../models/user'),
       OTP                 = require('../models/otp'),
       randomstring        = require('randomstring'),
       sendEmail           = require('../services/emails'),
-      validations         = require('../utils/validations/user'),
-      auth                = require('../middlewares/auth');
+      validations         = require('../utils/validations/user');
 
 
 module.exports            = {
@@ -114,4 +113,50 @@ module.exports            = {
             res.status(400).send({"message":err.message})
         }
     },
+///////////////////////////////////////////////////////////// follow
+    follow                  : async (req,res)=>{
+        try{
+            if(req.params.id == req.user._id){
+                return res.status(400).json("You can't follow yourself")
+            }
+            else{
+                const followedUser = await User.findById(req.params.id)
+                if(!followedUser){
+                    return res.status(404).json('No such a user found')
+                }
+                if(followedUser.followers.includes(req.user._id)){
+                    return res.status(400).send('You Already follow this user')
+                }else{
+                    await followedUser.updateOne({ $push : { followers : req.user._id }});
+                    await req.user.updateOne({ $push : { followings : followedUser._id }});
+                    res.status(200).send("Followed!")
+                }
+            }
+        }
+        catch(err){
+            res.status(400).send({"message":err.message})
+        }
+    },
+///////////////////////////////////////////////////////////// un follow
+    unFollow                : async (req,res)=>{
+        try{
+            if(req.params.id == req.user._id){
+                return res.status(400).send("You can't un follow yourself")
+            }
+            const unFollowedUser = await User.findById(req.params.id)
+                if(!unFollowedUser){
+                    return res.status(404).send('No such a user found') 
+                }
+                if(!unFollowedUser.followers.includes(req.user._id)){
+                    return res.status(400).send('You Already un followed this user')
+                }else{
+                    await unFollowedUser.updateOne({ $pull : { followers : req.user._id }});
+                    await req.user.updateOne({ $pull : { followings : unFollowedUser._id}});
+                    res.status(200).send("Un Followed!")
+                }
+        }
+        catch(err){
+            res.status(400).send({"message":err.message})
+        }
+    }
 }
